@@ -6,6 +6,7 @@ const consign = require('consign')
 consign()
     //lendo os arquivos
     .then('./config/middlewares.js')
+    .then('./api/validation.js')
     .then('./api')
     .then('./config/routes.js')
     .into(app)
