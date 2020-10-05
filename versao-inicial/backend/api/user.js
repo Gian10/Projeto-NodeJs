@@ -5,8 +5,6 @@ module.exports = app =>{
     // chamar os método de validation
     const {existsOrError, notExistsOrError, equalsOrError} = app.api.validation
 
-    let lista = []
-
     // método de encripção de senhas
     const encryptPassword = password =>{
         const salt = bcrypt.genSaltSync(10)
@@ -14,23 +12,22 @@ module.exports = app =>{
     }
 
     const save = async (req, res)=>{
-        const user = {... req.body}
-        lista.push(user)
+        const user = { ...req.body}
         
         // verificar se tem id na requisição
-        // if(req.params.id) {
-        //     user.id = req.params.id
-        // }
+        if(req.params.id) {
+            user.id = req.params.id
+        }
 
         try{
             existsOrError(user.name, "Nome não informado")
             equalsOrError(user.password, user.confirmPassword, "senha não conferem")
 
             // verificar se o usuario existe no db
-            // const userFromDB = await app.db('users').where({email: user.email}).first()
-            // if(!user.id){
-            //     notExistsOrError(userFromDB, 'Usuario já cadastrado')
-            // }
+            const userFromDB = await app.db('users').where({email: user.email}).first()
+            if(!user.id){
+                notExistsOrError(userFromDB, 'Usuario já cadastrado')
+            }
 
         }catch(msg){
             return res.status(400).send(msg)
@@ -42,33 +39,34 @@ module.exports = app =>{
         // deletar a confirmação da senha
         delete user.confirmPassword
 
-        // if(user.id){
-        //     app.db('users').update(user).where({id: user.id})
-        //     .then(_ => res.status(204).send())
-        //     .catch(err => res.status(500).send(err))
-        // }else{
-            //app.db('users').insert(user)
+        if(user.id){
+            app.db('users').update(user).where({id: user.id})
+            .then(_ => res.status(204).send())
+            .catch(err => res.status(500).send(err))
+        }else{
+            app.db('users').insert(user)
             res.send("Usuario Salvo")
-            //res.status(204).send()
-            //.then(_ => res.status(204).send())
-            //.catch(err => res.status(500).send(err))
-        //}
+            res.status(204).send()
+            .then(_ => res.status(204).send())
+            .catch(err => res.status(500).send(err))
+        }
     }
 
     const get = (req, res) =>{
-        // app.db('users')
-        //     .select('id', 'name', 'email', 'admin')
-        //     .then(users => res.json(users))
-        //     .catch(err => res.status(500).send(err))
-        res.json(lista)
+        app.db('users')
+            .select('id', 'name', 'email', 'admin')
+            .then(users => res.json(users))
+            .catch(err => res.status(500).send(err))
     }
 
     const getById = (req, res)=>{
         app.db('users')
         .select('id', 'name', 'email', 'admin')
-        .where({id: req.pa.id}).first()
+        .where({id: req.params.id}).first()
         .then(user => res.json(user))
         .catch(err => res.status(500).send(err))
+      
+        res.send("sem banco de dados")
     }
     // retornando o método
     return {save, get, getById}
