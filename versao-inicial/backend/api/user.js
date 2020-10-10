@@ -41,13 +41,11 @@ module.exports = app =>{
 
         if(user.id){
             app.db('users').update(user).where({id: user.id})
-            .then(_ => res.status(204).send())
+            .then(_ => res.status(200).send())
             .catch(err => res.status(500).send(err))
         }else{
             app.db('users').insert(user)
-            res.send("Usuario Salvo")
-            res.status(204).send()
-            .then(_ => res.status(204).send())
+            .then(_ => res.status(201).send())
             .catch(err => res.status(500).send(err))
         }
     }
@@ -65,8 +63,6 @@ module.exports = app =>{
         .where({id: req.params.id}).first()
         .then(user => res.json(user))
         .catch(err => res.status(500).send(err))
-      
-        res.send("sem banco de dados")
     }
     // retornando o método
     return {save, get, getById}
