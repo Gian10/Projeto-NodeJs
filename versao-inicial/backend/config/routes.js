@@ -1,5 +1,10 @@
 
 module.exports = app =>{
+    //validation de token
+    app.post('/signup', app.api.user.save)
+    app.post('/signin', app.api.auth.signin)
+    app.post('/validateToken', app.api.auth.validateToken)
+
     // users
     app.route('/users')
         .post(app.api.user.save)
