@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt-nodejs')
 module.exports = app =>{
     
     const signin = async (req, res) =>{
-        if(!req.body.email || ! req.body.password){
+        if(!req.body.email || !req.body.password){
             return res.status(400).send('Informe Usuario e senha')
         }
         const user = await app.db('users').where({email: req.body.email}).first()
@@ -34,7 +34,8 @@ module.exports = app =>{
 
         res.json({
             ...payload,
-            token: jwt.encode(payload, authSecret)
+            token: jwt.encode(payload, authSecret),
+            nome: "aaa"
         })
     }
 
