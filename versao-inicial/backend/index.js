@@ -8,6 +8,7 @@ app.db = db
 // // gerenciar meu middlewares 
 consign()
     //lendo os arquivos
+    .include('./config/passport.js')
     .then('./config/middlewares.js')
     .then('./api/validation.js')
     .then('./api')
