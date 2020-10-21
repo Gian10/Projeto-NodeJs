@@ -19,6 +19,12 @@ module.exports = app =>{
             user.id = req.params.id
         }
 
+        // se a rota users não for chamada, admin é false
+        //if(!req.originalUrl.startsWith('/users')) user.admin = false
+        //
+        //if(!req.user || !req.user.admin) user.admin = false
+        
+
         try{
             existsOrError(user.name, "Nome não informado")
             equalsOrError(user.password, user.confirmPassword, "senha não conferem")
@@ -40,7 +46,7 @@ module.exports = app =>{
         delete user.confirmPassword
 
         if(user.id){
-            app.db('users').update(user).where({id: user.id})
+            app.db('users').update(user).where({id: user.id}).whereNull('deletedAt')
             .then(_ => res.status(200).send())
             .catch(err => res.status(500).send(err))
         }else{
@@ -53,6 +59,7 @@ module.exports = app =>{
     const get = (req, res) =>{
         app.db('users')
             .select('id', 'name', 'email', 'admin')
+            .whereNull('deletedAt')
             .then(users => res.json(users))
             .catch(err => res.status(500).send(err))
     }
@@ -60,10 +67,28 @@ module.exports = app =>{
     const getById = (req, res)=>{
         app.db('users')
         .select('id', 'name', 'email', 'admin')
-        .where({id: req.params.id}).first()
+        .where({id: req.params.id}).whereNull('deletedAt').first()
         .then(user => res.json(user))
         .catch(err => res.status(500).send(err))
     }
+
+    // utilizando soft delete
+    const remove = async (req, res) =>{
+        try{
+            const articles = await app.db('articles').where({userId: req.params.id})
+            notExistsOrError(articles, 'Usuario possui artigos')
+
+            const rowsUpdate = await app.db('users').update({deletedAt: new Date()})
+            .where({id: req.params.id})
+            existsOrError(rowsUpdate, 'Usuario não foi encontrado')
+            res.status(204).send()
+        }catch(msg){
+            res.status(400).send(msg)
+        }
+
+    }
+
+
     // retornando o método
-    return {save, get, getById}
+    return {save, get, getById, remove}
 }
